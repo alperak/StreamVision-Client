@@ -1,7 +1,6 @@
 #ifndef FRAMEENCODER_HPP_
 #define FRAMEENCODER_HPP_
 
-#include <vector>
 #include <opencv2/imgcodecs.hpp>
 
 class FrameEncoder {
@@ -13,8 +12,9 @@ public:
     FrameEncoder& operator=(FrameEncoder&&) = delete;
 
     static std::vector<uchar> encodeJPEG(const cv::Mat& frame, int quality = defaultJPEGQuality_);
+
 private:
-    static constexpr int defaultJPEGQuality_ = 90;
+    static constexpr int defaultJPEGQuality_{90};
 };
 
 #endif

@@ -17,28 +17,24 @@ public:
     CameraCapture(CameraCapture&&) = delete;
     CameraCapture& operator=(CameraCapture&&) = delete;
     
-    explicit CameraCapture(int camId) : capture_{camId}
-    {
-        if (!capture_.isOpened()) {
-            throw std::runtime_error("[CameraCapture] - Failed to open camera Id: " + std::to_string(camId));
-        }
-    }
-    ~CameraCapture() 
-    {
-        stop();
-        capture_.release(); 
-    }
+    explicit CameraCapture(int camId);
+    ~CameraCapture();
+
     void start();
     void stop();
-    std::shared_ptr<cv::Mat> getLatestFrame(); 
+
+    cv::Mat getLatestFrame() const;
 
 private:
     void frameCapture();
+
     cv::VideoCapture capture_;
+
     std::thread captureThread_;
     std::atomic<bool> isRunning_{false};
-    std::shared_ptr<cv::Mat> latestFrame_;
-    std::mutex frameMutex_; 
+
+    cv::Mat latestFrame_;
+    mutable std::mutex frameMutex_;
 };
 
 #endif

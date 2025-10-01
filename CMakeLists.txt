@@ -26,7 +26,6 @@ set(SOURCES
     src/main.cpp
     src/CameraCapture.cpp
     src/FrameEncoder.cpp
-    src/FrameMetadata.cpp
     src/FrameSender.cpp
 	src/JsonParser.cpp
 	src/PipelineController.cpp

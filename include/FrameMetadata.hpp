@@ -1,14 +1,12 @@
 #ifndef FRAMEMETADATA_HPP_
 #define FRAMEMETADATA_HPP_
 
-#include <vector>
-#include <string>
 #include <opencv2/core/types.hpp>
-
 struct Detection {
-    std::string label;
-    float confidence;
-    cv::Rect boundingBox;
+    int classId{};
+    std::string label{};
+    float confidence{};
+    cv::Rect boundingBox{};
 };
 
 struct FrameMetadata {

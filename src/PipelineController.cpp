@@ -32,8 +32,9 @@ void PipelineController::process() {
             auto encodedFrame = FrameEncoder::encodeJPEG(frame);
             if (!encodedFrame.empty()) {
                 frameHandler_.pushEncodedFrame(std::move(encodedFrame));
-                auto parsedJson = JsonParser::parse(frameHandler_.getLatestDetections());
-                
+                auto detections = frameHandler_.getLatestDetections();
+                auto parsedJson = JsonParser::parse(detections);
+
                 /* std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
                 for (const auto& d : parsedJson.detections) {
                     std::cout << "classId: " << d.classId

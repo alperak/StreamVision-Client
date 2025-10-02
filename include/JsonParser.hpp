@@ -1,7 +1,7 @@
 #ifndef JSONPARSER_HPP_
 #define JSONPARSER_HPP_
 
-#include "FrameMetadata.hpp"
+#include "DetectionData.hpp"
 #include <nlohmann/json.hpp>
 
 class JsonParser {
@@ -12,7 +12,8 @@ public:
     JsonParser(JsonParser&&) = delete;
     JsonParser& operator=(JsonParser&&) = delete;
 
-    static FrameMetadata parse(const std::string& jsonStr);
+    static DetectionResult parse(const std::string& jsonStr);
+
 private:
 
 };

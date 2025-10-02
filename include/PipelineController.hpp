@@ -2,7 +2,7 @@
 #define PIPELINECONTROLLER_HPP_
 
 #include "CameraCapture.hpp"
-#include "FrameSender.hpp"
+#include "FrameHandler.hpp"
 #include "FrameEncoder.hpp"
 #include "JsonParser.hpp"
 
@@ -12,7 +12,7 @@
 
 class PipelineController {
 public:
-    PipelineController() : camera_{1}, frameSender_{} {}
+    PipelineController() : camera_{1}, frameHandler_{} {}
     ~PipelineController()
     {
         stop();
@@ -24,7 +24,7 @@ private:
     void process();
     
     CameraCapture camera_;
-    FrameSender frameSender_;
+    FrameHandler frameHandler_;
 
     std::thread pipelineThread_;
     std::atomic<bool> isRunning_{false};

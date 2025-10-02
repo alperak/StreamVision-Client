@@ -7,7 +7,7 @@ void PipelineController::start()
     }
 
     camera_.start();
-    frameSender_.start();
+    frameHandler_.start();
 
     isRunning_ = true;
     pipelineThread_ = std::thread(&PipelineController::process, this);
@@ -21,28 +21,29 @@ void PipelineController::stop()
         pipelineThread_.join();
     }
 
-    frameSender_.stop();
+    frameHandler_.stop();
     camera_.stop();
 }
 
 void PipelineController::process() {
     while (isRunning_) {
-        std::shared_ptr<cv::Mat> frame = camera_.getLatestFrame();
-        if (frame && !frame->empty()) {
-            auto encoded = FrameEncoder::encodeJPEG(*frame);
-            if (!encoded.empty()) {
-                frameSender_.pushEncodedFrame(std::move(encoded));
-                auto parsedJson = JsonParser::parse(frameSender_.getLatestJsonMetadata());
+        auto frame = camera_.getLatestFrame();
+        if (!frame.empty()) {
+            auto encodedFrame = FrameEncoder::encodeJPEG(frame);
+            if (!encodedFrame.empty()) {
+                frameHandler_.pushEncodedFrame(std::move(encodedFrame));
+                auto parsedJson = JsonParser::parse(frameHandler_.getLatestDetections());
                 
-                std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
+                /* std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
                 for (const auto& d : parsedJson.detections) {
-                    std::cout << " - Label: " << d.label
-                                << ", Confidence: " << d.confidence
-                                << ", BBox: (" << d.boundingBox.x << ", "
+                    std::cout << "classId: " << d.classId
+                                << " , ClassName: " << d.className
+                                << " , Confidence: " << d.confidence
+                                << " , BBox: (" << d.boundingBox.x << ", "
                                                 << d.boundingBox.y << ", "
-                                                << d.boundingBox.width << "x"
+                                                << d.boundingBox.width << ", "
                                                 << d.boundingBox.height << ")\n";
-                }
+                }*/
             }
         }
     }

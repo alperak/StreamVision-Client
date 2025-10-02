@@ -31,7 +31,7 @@ void CameraCapture::stop()
 cv::Mat CameraCapture::getLatestFrame() const
 {
     std::lock_guard<std::mutex> lock(frameMutex_);
-    return latestFrame_;
+    return latestFrame_.clone();
 }
 
 void CameraCapture::frameCapture()

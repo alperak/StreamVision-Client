@@ -9,6 +9,7 @@ void PipelineController::start()
     camera_.start();
     frameHandler_.start();
     drawer_.start();
+    webStream_.start();
 
     isRunning_ = true;
     pipelineThread_ = std::thread(&PipelineController::process, this);
@@ -22,6 +23,7 @@ void PipelineController::stop()
         pipelineThread_.join();
     }
 
+    webStream_.stop();
     drawer_.stop();
     frameHandler_.stop();
     camera_.stop();
@@ -39,6 +41,8 @@ void PipelineController::process() {
 
                 drawer_.PushFrameAndDetections(frame, std::move(parsedJson));
                 auto drawnFrame = drawer_.getDrawnFrame();
+
+                webStream_.pushFrame(drawnFrame);
 
                 /* std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
                 for (const auto& d : parsedJson.detections) {

@@ -21,6 +21,7 @@ if(CPPZMQ_INCLUDE_DIR)
 else()
     message(FATAL_ERROR "cppzmq not found!")
 endif()
+find_package(httplib REQUIRED)
 
 set(SOURCES
     src/main.cpp
@@ -40,6 +41,7 @@ target_include_directories(streamvision-client
         ${OpenCV_INCLUDE_DIRS}
         ${ZeroMQ_INCLUDE_DIRS}
         ${CPPZMQ_INCLUDE_DIR}
+        ${httplib_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/include
 )
 

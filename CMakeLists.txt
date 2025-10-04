@@ -29,6 +29,7 @@ set(SOURCES
     src/FrameHandler.cpp
 	src/JsonParser.cpp
 	src/PipelineController.cpp
+    src/Drawer.cpp
 	src/WebStream.cpp
 )
 

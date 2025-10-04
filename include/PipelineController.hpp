@@ -5,6 +5,7 @@
 #include "FrameHandler.hpp"
 #include "FrameEncoder.hpp"
 #include "JsonParser.hpp"
+#include "Drawer.hpp"
 
 #include <thread>
 #include <atomic>
@@ -12,7 +13,7 @@
 
 class PipelineController {
 public:
-    PipelineController() : camera_{1}, frameHandler_{} {}
+    PipelineController() : camera_{1}, frameHandler_{}, drawer_{} {}
     ~PipelineController()
     {
         stop();
@@ -25,6 +26,7 @@ private:
     
     CameraCapture camera_;
     FrameHandler frameHandler_;
+    Drawer drawer_;
 
     std::thread pipelineThread_;
     std::atomic<bool> isRunning_{false};

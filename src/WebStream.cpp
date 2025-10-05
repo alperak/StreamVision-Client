@@ -33,12 +33,12 @@ void WebStream::pushFrame(const cv::Mat& frame)
 
 void WebStream::runMjpegStream()
 {
+    cv::Mat displayedFrame;
     server_.Get("/stream", [&](const httplib::Request&, httplib::Response &res) {
         res.set_content_provider(
             "multipart/x-mixed-replace; boundary=frame",
             [&](size_t, httplib::DataSink &sink) {
                 while (isRunning_) {
-                    cv::Mat displayedFrame;
                     {
                         std::lock_guard<std::mutex> lock(frameMutex_);
                         displayedFrame = latestFrame_.clone();
@@ -53,6 +53,10 @@ void WebStream::runMjpegStream()
                     sink.write(reinterpret_cast<const char*>(encodedDisplayedFrame.data()), encodedDisplayedFrame.size());
                     sink.write("\r\n", 2);
 
+                    // Limit the frame sending rate to ~30 FPS.
+                    // Without this sleep, the loop runs as fast as possible, which can cause
+                    // TCP buffers to fill up and the client to receive frames with noticeable delay,
+                    // even if the latest frame is available. This ensures smooth and timely streaming.
                     std::this_thread::sleep_for(std::chrono::milliseconds(33)); // ~30fps
                 }
                 return false; // stream end

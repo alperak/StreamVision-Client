@@ -14,7 +14,7 @@ CameraCapture::~CameraCapture()
 void CameraCapture::start()
 {
     if (isRunning_) {
-        return; // Prevent multiple threads
+        return;
     }
     isRunning_ = true;
     captureThread_ = std::thread(&CameraCapture::frameCapture, this);
@@ -23,6 +23,7 @@ void CameraCapture::start()
 void CameraCapture::stop()
 {
     isRunning_ = false;
+    capture_.release();
     if (captureThread_.joinable()) {
         captureThread_.join();
     }

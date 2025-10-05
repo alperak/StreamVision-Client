@@ -7,21 +7,23 @@
 #include "JsonParser.hpp"
 #include "Drawer.hpp"
 #include "WebStream.hpp"
-
 #include <thread>
 #include <atomic>
 #include <iostream>
 
 class PipelineController {
 public:
-    PipelineController() : camera_{1}, frameHandler_{}, drawer_{}, webStream_{} {}
-    ~PipelineController()
-    {
-        stop();
-    }
+    PipelineController(const PipelineController&) = delete;
+    PipelineController& operator= (const PipelineController&) = delete;
+    PipelineController(PipelineController&&) = delete;
+    PipelineController& operator=(PipelineController&&) = delete;
+
+    PipelineController();
+    ~PipelineController();
 
     void start();
     void stop();
+
 private:
     void process();
     

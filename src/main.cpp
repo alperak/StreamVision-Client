@@ -1,7 +1,6 @@
 #include "PipelineController.hpp"
 #include <condition_variable>
 
-
 int main()
 {
     PipelineController pipeline;

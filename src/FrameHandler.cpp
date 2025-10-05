@@ -2,7 +2,6 @@
 
 FrameHandler::FrameHandler() : context_{ioThreadCount_}, clientSocket_(context_, zmq::socket_type::req) 
 {
-    // Need exception handling
     clientSocket_.connect("tcp://localhost:5555");
     std::cout << "Connection success to localhost:5555\n";
 }
@@ -14,7 +13,7 @@ FrameHandler::~FrameHandler()
 
 void FrameHandler::start()
 {
-    if (isRunning_) { // Prevent multiple threads
+    if (isRunning_) {
         return;
     }
     isRunning_ = true;
@@ -23,8 +22,8 @@ void FrameHandler::start()
 
 void FrameHandler::stop()
 {
-    // May be necessary to close the socket
     isRunning_ = false;
+    clientSocket_.close();
     if (senderThread_.joinable()) {
         senderThread_.join();
     }
@@ -32,8 +31,10 @@ void FrameHandler::stop()
 
 void FrameHandler::pushEncodedFrame(std::vector<uchar>&& encodedFrame)
 {
-    std::lock_guard<std::mutex> lock(encodedFrameMutex_);
-    latestEncodedFrame_ = std::move(encodedFrame);
+    if (!encodedFrame.empty()) {
+        std::lock_guard<std::mutex> lock(encodedFrameMutex_);
+        latestEncodedFrame_ = std::move(encodedFrame);
+    }
 }
 
 std::string FrameHandler::getLatestDetections() const
@@ -52,7 +53,6 @@ void FrameHandler::sendEncodedFrameAndReceiveDetections()
             encodedFrameToSend.swap(latestEncodedFrame_);
         }
 
-        // Need exception handling for send/receive
         if(!encodedFrameToSend.empty()) {
             auto isEncodedFrameSent = clientSocket_.send(zmq::buffer(encodedFrameToSend), zmq::send_flags::none);
             if (isEncodedFrameSent) {
@@ -60,8 +60,13 @@ void FrameHandler::sendEncodedFrameAndReceiveDetections()
                 auto isDetectionReceived = clientSocket_.recv(receivedMsg, zmq::recv_flags::none);
                 if (isDetectionReceived) {
                     std::string detectionsData(static_cast<char*>(receivedMsg.data()), receivedMsg.size());
-                    // Server sends JSON responses. When json is declared but not populated,
-                    // json.dump() returns the string "null", so we explicitly check for it
+                    // The server responds with JSON formatted string.
+                    // If there are no detections, the server sends JSON string representing an
+                    // object with an empty "detections" array like {"detections":[]}.
+                    // When a JSON string is declared but not assigned any data, json.dump() may return "null".
+                    // Therefore, we explicitly check for these cases before processing the data.
+                    // Having an empty detections array isn't a problem because not every frame necessarily contains detections
+                    // but we still need to handle other invalid or null cases.
                     if (!detectionsData.empty() && detectionsData != "null") {
                         {
                             std::lock_guard<std::mutex> lock(detectionsMutex_);

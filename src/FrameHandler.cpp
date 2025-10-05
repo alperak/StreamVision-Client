@@ -2,8 +2,8 @@
 
 FrameHandler::FrameHandler() : context_{ioThreadCount_}, clientSocket_(context_, zmq::socket_type::req) 
 {
-    clientSocket_.connect("tcp://localhost:5555");
-    std::cout << "Connection success to localhost:5555\n";
+    clientSocket_.connect("tcp://0.0.0.0:5555");
+    std::cout << "Connection success to 0.0.0.0:5555\n";
 }
 
 FrameHandler::~FrameHandler()

@@ -11,13 +11,13 @@ DetectionResult JsonParser::parse(const std::string& jsonString)
         if (json.contains("detections") && json["detections"].is_array()) {
 
             for (const auto& detectionJson : json["detections"]) {
-
+                // Validate all required fields before parsing
                 if (detectionJson.contains("classId") && detectionJson.contains("className") &&
                     detectionJson.contains("confidence") && detectionJson.contains("boundingBox") &&
                     detectionJson["boundingBox"].is_object() && detectionJson["boundingBox"].contains("x") &&
                     detectionJson["boundingBox"].contains("y") && detectionJson["boundingBox"].contains("width") &&
                     detectionJson["boundingBox"].contains("height")) {
-
+                        // Parse and construct Detection object
                         detectionResult.detections.emplace_back(
                         detectionJson["classId"].get<int>(),
                         detectionJson["className"].get<std::string>(),

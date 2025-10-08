@@ -23,10 +23,10 @@ void CameraCapture::start()
 void CameraCapture::stop()
 {
     isRunning_ = false;
-    capture_.release();
     if (captureThread_.joinable()) {
         captureThread_.join();
     }
+    capture_.release();
 }
 
 cv::Mat CameraCapture::getLatestFrame() const
@@ -39,6 +39,7 @@ void CameraCapture::frameCapture()
 {
     cv::Mat frame;
     while (isRunning_) {
+        // Capture frame
         if (capture_.read(frame)) {
             {
                 std::lock_guard<std::mutex> lock(frameMutex_);

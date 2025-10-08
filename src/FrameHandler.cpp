@@ -23,10 +23,10 @@ void FrameHandler::start()
 void FrameHandler::stop()
 {
     isRunning_ = false;
-    clientSocket_.close();
     if (senderThread_.joinable()) {
         senderThread_.join();
     }
+    clientSocket_.close();
 }
 
 void FrameHandler::pushEncodedFrame(std::vector<uchar>&& encodedFrame)

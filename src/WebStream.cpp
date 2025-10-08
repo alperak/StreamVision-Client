@@ -17,10 +17,10 @@ void WebStream::start()
 void WebStream::stop()
 {
     isRunning_ = false;
-    server_.stop();
     if (webServerThread_.joinable()) {
         webServerThread_.join();
     }
+    server_.stop();
 }
 
 void WebStream::pushFrame(const cv::Mat& frame)
@@ -34,7 +34,9 @@ void WebStream::pushFrame(const cv::Mat& frame)
 void WebStream::runMjpegStream()
 {
     cv::Mat displayedFrame;
+    // Register MJPEG endpoint
     server_.Get("/stream", [&](const httplib::Request&, httplib::Response &res) {
+        // Set multipart MJPEG content type
         res.set_content_provider(
             "multipart/x-mixed-replace; boundary=frame",
             [&](size_t, httplib::DataSink &sink) {

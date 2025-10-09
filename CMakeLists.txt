@@ -22,6 +22,7 @@ else()
     message(FATAL_ERROR "cppzmq not found!")
 endif()
 find_package(httplib REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(SOURCES
     src/main.cpp
@@ -32,6 +33,7 @@ set(SOURCES
 	src/PipelineController.cpp
     src/Drawer.cpp
 	src/WebStream.cpp
+    src/ConfigXML.cpp
 )
 
 add_executable(streamvision-client ${SOURCES})
@@ -50,6 +52,7 @@ target_link_libraries(streamvision-client
         ${OpenCV_LIBS}
         ${ZeroMQ_LIBRARIES}
         nlohmann_json::nlohmann_json
+        tinyxml2::tinyxml2
 )
 
 target_compile_options(streamvision-client PRIVATE

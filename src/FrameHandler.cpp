@@ -2,8 +2,10 @@
 
 FrameHandler::FrameHandler() : context_{ioThreadCount_}, clientSocket_(context_, zmq::socket_type::req) 
 {
-    clientSocket_.connect("tcp://0.0.0.0:5555");
-    std::cout << "Connection success to 0.0.0.0:5555\n";
+    const auto& config = ConfigXML::getInstance();
+    const std::string endpoint = "tcp://" + config.getServerIP() + ":" + std::to_string(config.getServerPort());
+    clientSocket_.connect(endpoint);
+    std::cout << "[FrameHandler] - Successfully connected to detection server at " << endpoint << '\n';
 }
 
 FrameHandler::~FrameHandler()

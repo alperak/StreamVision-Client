@@ -1,6 +1,7 @@
 #ifndef FRAMEHANDLER_HPP_
 #define FRAMEHANDLER_HPP_
 
+#include "ConfigXML.hpp"
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -16,7 +17,7 @@
  * Sends encoded frames to a remote detection server and receives JSON formatted
  * detection results as a string in a request-reply pattern. Runs in a separate thread.
  *
- * @note Uses ZeroMQ REQ-REP pattern on tcp://0.0.0.0:5555
+ * @note Uses ZeroMQ REQ-REP pattern. Server address loaded from ConfigXML.
  */
 class FrameHandler {
 public:
@@ -28,6 +29,7 @@ public:
 
     /**
      * @brief Constructor - initializes ZeroMQ context and connects to server
+     * @note Server IP and port are loaded from ConfigXML
      */
     FrameHandler();
 

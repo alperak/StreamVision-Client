@@ -1,6 +1,6 @@
 #include "PipelineController.hpp"
 
-PipelineController::PipelineController() : camera_{1}, frameHandler_{}, drawer_{}, webStream_{}
+PipelineController::PipelineController() : camera_{}, frameHandler_{}, drawer_{}, webStream_{}
 {
 
 }

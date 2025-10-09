@@ -1,6 +1,7 @@
 #ifndef CAMERACAPTURE_HPP_
 #define CAMERACAPTURE_HPP_
 
+#include "ConfigXML.hpp"
 #include <opencv2/videoio.hpp>
 #include <opencv2/core/mat.hpp>
 #include <atomic>
@@ -18,18 +19,17 @@
  */
 class CameraCapture {
 public:
-    CameraCapture() = delete;
     CameraCapture (const CameraCapture&) = delete;
     CameraCapture& operator= (const CameraCapture&) = delete;
     CameraCapture(CameraCapture&&) = delete;
     CameraCapture& operator=(CameraCapture&&) = delete;
     
     /**
-     * @brief Constructs and initializes camera capture
-     * @param camId Camera device index (typically 0 for default camera)
+     * @brief Constructs and initializes camera capture from config
      * @throws std::runtime_error if camera cannot be opened
+     * @note Camera parameters (index, resolution, fps) are loaded from ConfigXML
      */
-    explicit CameraCapture(int camId);
+    CameraCapture();
 
     /**
      * @brief Destructor - stops capture and releases resources

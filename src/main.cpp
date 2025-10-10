@@ -1,35 +1,22 @@
 #include "PipelineController.hpp"
+#include "ConfigXML.hpp"
+#include <condition_variable>
 
-#include <iostream>
-
-int main() {
+int main()
+{
+    // Initialize configuration from config.xml
+    ConfigXML::getInstance().initialize();
 
     PipelineController pipeline;
     pipeline.start();
 
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    std::mutex mtx;
+    std::condition_variable cv;
 
-    pipeline.stop();  // clean shutdown
-    // CameraCapture cam(1);
-    // FrameSender sender;
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock); // The main thread sleeps and waits until it is killed with Ctrl + C.
 
-    // cam.start();
-    // sender.start();
-
-    // while (true) {
-    //     auto frame = cam.getLatestFrame();
-    //     if (frame && !frame->empty()) {
-    //         auto encoded = FrameEncoder::encodeJPEG(*frame);
-    //         if (!encoded.empty()) {
-    //             sender.pushEncodedFrame(std::move(encoded));
-    //         } 
-    //     }
-    // }
-
-    // sender.stop();
-    // cam.stop();
+    pipeline.stop();
 
     return 0;
 }

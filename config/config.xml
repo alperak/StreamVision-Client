@@ -1,0 +1,12 @@
+<Config>
+    <Camera>
+        <Index>0</Index>
+        <Width>640</Width>
+        <Height>480</Height>
+        <FPS>30</FPS>
+    </Camera>
+    <Server>
+        <IP>0.0.0.0</IP>
+        <Port>5555</Port>
+    </Server>
+</Config>

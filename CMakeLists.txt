@@ -14,18 +14,26 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ZeroMQ REQUIRED libzmq)
 find_package(OpenCV REQUIRED)
-find_package(cppzmq REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_path(CPPZMQ_INCLUDE_DIR zmq.hpp)
+if(CPPZMQ_INCLUDE_DIR)
+    message(STATUS "Found cppzmq at ${CPPZMQ_INCLUDE_DIR}")
+else()
+    message(FATAL_ERROR "cppzmq not found!")
+endif()
+find_package(httplib REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(SOURCES
     src/main.cpp
     src/CameraCapture.cpp
     src/FrameEncoder.cpp
-    src/FrameMetadata.cpp
-    src/FrameSender.cpp
+    src/FrameHandler.cpp
 	src/JsonParser.cpp
 	src/PipelineController.cpp
+    src/Drawer.cpp
 	src/WebStream.cpp
+    src/ConfigXML.cpp
 )
 
 add_executable(streamvision-client ${SOURCES})
@@ -34,6 +42,8 @@ target_include_directories(streamvision-client
     PRIVATE
         ${OpenCV_INCLUDE_DIRS}
         ${ZeroMQ_INCLUDE_DIRS}
+        ${CPPZMQ_INCLUDE_DIR}
+        ${httplib_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/include
 )
 
@@ -42,7 +52,7 @@ target_link_libraries(streamvision-client
         ${OpenCV_LIBS}
         ${ZeroMQ_LIBRARIES}
         nlohmann_json::nlohmann_json
-        cppzmq
+        tinyxml2::tinyxml2
 )
 
 target_compile_options(streamvision-client PRIVATE

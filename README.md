@@ -13,6 +13,7 @@
 ## Table of Contents
 
 - [Project Overview](#overview)
+- [Demo](#demo)
 - [Architecture](#architecture)
 - [Dependencies](#dependencies)
 - [Installation](#installation)
@@ -31,6 +32,13 @@ StreamVision is a distributed object detection system consisting of two componen
 
 ---
 
+## Demo
+
+A demo captured using **YOLOV11s**:
+
+![streamvision-demo](https://github.com/user-attachments/assets/22f422fa-1839-45f1-98fc-eaa7f44b82bb)
+
+---
 ## Architecture
 
 > **Note:** Application settings (Camera Device Index, Resolution, FPS, and Server Address, Port) are managed by `ConfigXML` singleton class, loaded once at startup.

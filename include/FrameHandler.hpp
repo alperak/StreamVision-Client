@@ -2,7 +2,7 @@
 #define FRAMEHANDLER_HPP_
 
 #include "ConfigXML.hpp"
-#include <iostream>
+
 #include <thread>
 #include <vector>
 #include <mutex>
@@ -17,7 +17,7 @@
  * Sends encoded frames to a remote detection server and receives JSON formatted
  * detection results as a string in a request-reply pattern. Runs in a separate thread.
  *
- * @note Uses ZeroMQ REQ-REP pattern. Server address loaded from ConfigXML.
+ * @note Uses ZeroMQ DEALER-ROUTER pattern. Server address loaded from ConfigXML.
  */
 class FrameHandler {
 public:
@@ -53,7 +53,7 @@ public:
      * @brief Submits an encoded frame for transmission
      * @param encodedFrame JPEG encoded frame data
      */
-    void pushEncodedFrame(std::vector<uchar>&& encodedFrame);
+    void setEncodedFrame(std::vector<uchar> encodedFrame);
 
     /**
      * @brief Retrieves the most recent detection results
@@ -67,18 +67,18 @@ private:
      */
     void sendEncodedFrameAndReceiveDetections();
 
-    zmq::context_t context_;                ///< ZeroMQ context
-    static constexpr int ioThreadCount_{1}; ///< I/O threads for ZeroMQ context
-    zmq::socket_t clientSocket_;            ///< REQ socket for server communication
+    static constexpr int kIoThreadCount_{1};    ///< I/O threads for ZeroMQ context
+    zmq::context_t context_;                    ///< ZeroMQ context
+    zmq::socket_t dealerSocket_;                ///< DEALER socket for server communication
 
-    std::thread senderThread_;              ///< Background transmission thread
-    std::atomic<bool> isRunning_{false};    ///< Thread state flag
+    std::thread frameHandler_;                  ///< Background transmission thread
+    std::atomic<bool> isRunning_{false};        ///< Thread state flag
 
-    std::vector<uchar> latestEncodedFrame_; ///< Frame buffer for transmission
-    std::mutex encodedFrameMutex_;          ///< Protects frame buffer access
+    std::vector<uchar> latestEncodedFrame_;     ///< Frame buffer for transmission
+    std::mutex encodedFrameMutex_;              ///< Protects frame buffer access
 
-    std::string latestDetections_;          ///< Latest detection results (JSON formatted string)
-    mutable std::mutex detectionsMutex_;    ///< Protects detection data access
+    std::string latestDetections_;              ///< Latest detection results (JSON formatted string)
+    mutable std::mutex detectionsMutex_;        ///< Protects detection data access
 };
 
 #endif

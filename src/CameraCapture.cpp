@@ -1,14 +1,16 @@
 #include "CameraCapture.hpp"
 
+#include <spdlog/spdlog.h>
+
 CameraCapture::CameraCapture()
 {
     // Load camera settings from config
     const auto& config = ConfigXML::getInstance();
 
-    int camId = config.getCameraIndex();
-    int width = config.getCameraWidth();
-    int height = config.getCameraHeight();
-    int fps = config.getCameraFPS();
+    const int camId = config.getCameraIndex();
+    const int width = config.getCameraWidth();
+    const int height = config.getCameraHeight();
+    const int fps = config.getCameraFPS();
 
     // Open camera
     capture_.open(camId);
@@ -23,14 +25,14 @@ CameraCapture::CameraCapture()
     capture_.set(cv::CAP_PROP_FPS, fps);
 
     // Get actual values
-    int actualWidth = static_cast<int>(capture_.get(cv::CAP_PROP_FRAME_WIDTH));
-    int actualHeight = static_cast<int>(capture_.get(cv::CAP_PROP_FRAME_HEIGHT));
-    int actualFps = static_cast<int>(capture_.get(cv::CAP_PROP_FPS));
+    const int actualWidth = static_cast<int>(capture_.get(cv::CAP_PROP_FRAME_WIDTH));
+    const int actualHeight = static_cast<int>(capture_.get(cv::CAP_PROP_FRAME_HEIGHT));
+    const int actualFps = static_cast<int>(capture_.get(cv::CAP_PROP_FPS));
 
-    std::cout << "[CameraCapture] - Camera initialized successfully\n"
-              << "  Device Index : " << camId << '\n'
-              << "  Requested    : " << width << "x" << height << " @ " << fps << " fps\n"
-              << "  Actual       : " << actualWidth << "x" << actualHeight << " @ " << actualFps << " fps\n\n";
+    spdlog::info("[CameraCapture] - Camera initialized successfully");
+    spdlog::info("  Device Index : {}", camId);
+    spdlog::info("  Requested    : {}x{} @ {} fps", width, height, fps);
+    spdlog::info("  Actual       : {}x{} @ {} fps", actualWidth, actualHeight, actualFps);
 }
 
 CameraCapture::~CameraCapture()
@@ -40,37 +42,38 @@ CameraCapture::~CameraCapture()
 
 void CameraCapture::start()
 {
-    if (isRunning_) {
+    if (isRunning_.exchange(true))
         return;
-    }
-    isRunning_ = true;
+
     captureThread_ = std::thread(&CameraCapture::frameCapture, this);
 }
 
 void CameraCapture::stop()
 {
-    isRunning_ = false;
-    if (captureThread_.joinable()) {
+    if (!isRunning_.exchange(false))
+        return;
+
+    if (captureThread_.joinable())
         captureThread_.join();
-    }
+
     capture_.release();
 }
 
 cv::Mat CameraCapture::getLatestFrame() const
 {
     std::lock_guard<std::mutex> lock(frameMutex_);
-    return latestFrame_.clone();
+    return latestFrame_;
 }
 
 void CameraCapture::frameCapture()
 {
-    cv::Mat frame;
     while (isRunning_) {
         // Capture frame
+        cv::Mat frame;
         if (capture_.read(frame)) {
             {
                 std::lock_guard<std::mutex> lock(frameMutex_);
-                latestFrame_ = frame;
+                latestFrame_ = std::move(frame);
             }
         }
     }

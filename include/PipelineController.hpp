@@ -7,9 +7,10 @@
 #include "JsonParser.hpp"
 #include "Drawer.hpp"
 #include "WebStream.hpp"
+
 #include <thread>
 #include <atomic>
-#include <iostream>
+#include <memory>
 
 /**
  * @class PipelineController
@@ -55,13 +56,13 @@ private:
      */
     void process();
     
-    CameraCapture camera_;                  ///< Camera frame capture
-    FrameHandler frameHandler_;             ///< Network communication with detection server
-    Drawer drawer_;                         ///< Detection visualization
-    WebStream webStream_;                   ///< HTTP streaming server
+    std::unique_ptr<CameraCapture> camera_;         ///< Camera frame capture
+    std::unique_ptr<FrameHandler> frameHandler_;    ///< Network communication with detection server
+    std::unique_ptr<Drawer> drawer_;                ///< Detection visualization
+    std::unique_ptr<WebStream> webStream_;          ///< HTTP streaming server
 
-    std::thread pipelineThread_;            ///< Main processing thread
-    std::atomic<bool> isRunning_{false};    ///< Thread state flag
+    std::thread pipelineThread_;                    ///< Main processing thread
+    std::atomic<bool> isRunning_{false};            ///< Thread state flag
 };
 
 #endif

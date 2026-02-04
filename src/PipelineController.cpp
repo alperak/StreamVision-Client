@@ -1,9 +1,12 @@
 #include "PipelineController.hpp"
 
-PipelineController::PipelineController() : camera_{}, frameHandler_{}, drawer_{}, webStream_{}
-{
+#include <spdlog/spdlog.h>
 
-}
+PipelineController::PipelineController()
+    : camera_(std::make_unique<CameraCapture>()),
+      frameHandler_(std::make_unique<FrameHandler>()),
+      drawer_(std::make_unique<Drawer>()),
+      webStream_(std::make_unique<WebStream>()) {}
 
 PipelineController::~PipelineController()
 {
@@ -12,52 +15,56 @@ PipelineController::~PipelineController()
 
 void PipelineController::start() 
 {
-    if (isRunning_) {
+    if (isRunning_.exchange(true))
         return;
-    }
 
     // Start all pipeline components
-    camera_.start();
-    frameHandler_.start();
-    drawer_.start();
-    webStream_.start();
+    camera_->start();
+    frameHandler_->start();
+    drawer_->start();
+    webStream_->start();
 
-    isRunning_ = true;
     pipelineThread_ = std::thread(&PipelineController::process, this);
+    spdlog::info("[PipelineController] - Started");
 }
 
 void PipelineController::stop() 
 {
-    isRunning_ = false;
+    if (!isRunning_.exchange(false))
+        return;
 
-    if (pipelineThread_.joinable()) {
+    if (pipelineThread_.joinable())
         pipelineThread_.join();
-    }
 
-    // Stop components in reverse order to ensure clean shutdown
-    webStream_.stop();
-    drawer_.stop();
-    frameHandler_.stop();
-    camera_.stop();
+    // Reverse order shutdown
+    webStream_->stop();
+    drawer_->stop();
+    frameHandler_->stop();
+    camera_->stop();
+
+    spdlog::info("[PipelineController] - Stopped");
 }
 
 void PipelineController::process() {
     while (isRunning_) {
         // Get frame from camera
-        cv::Mat frame = camera_.getLatestFrame();
-        // Encode frame as JPEG
-        std::vector<uchar> encodedFrame = FrameEncoder::encodeJPEG(frame);
-        if (!encodedFrame.empty()) {
-            // Send frame and receive detections from server
-            frameHandler_.pushEncodedFrame(std::move(encodedFrame));
-            std::string detections = frameHandler_.getLatestDetections();
-            // Parse JSON detection results
-            DetectionResult parsedJson = JsonParser::parse(detections);
+        cv::Mat frame = camera_->getLatestFrame();
+        if (!frame.empty()) {
+            DetectionResult parsedJson;
+            // Encode frame as JPEG
+            std::optional<std::vector<uchar>> encodedFrame = FrameEncoder::encodeJPEG(frame);
+            if (encodedFrame) {
+                // Send frame and receive detections from server
+                frameHandler_->setEncodedFrame(std::move(*encodedFrame));
+                std::string detections = frameHandler_->getLatestDetections();
+                // Parse JSON detection results
+                parsedJson = JsonParser::parse(detections);
+            }
             // Draw detections on frame
-            drawer_.PushFrameAndDetections(frame, std::move(parsedJson));
-            cv::Mat drawnFrame = drawer_.getDrawnFrame();
+            drawer_->setFrameAndDetections(std::move(frame), std::move(parsedJson));
+            cv::Mat drawnFrame = drawer_->getDrawnFrame();
             // Stream annotated frame to web
-            webStream_.pushFrame(drawnFrame);
+            webStream_->setFrame(drawnFrame);
 
             /* std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
             for (const auto& d : parsedJson.detections) {

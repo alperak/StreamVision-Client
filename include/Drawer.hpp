@@ -45,11 +45,11 @@ public:
      * @param frame Input frame to annotate
      * @param detections Detection results to draw
      */
-    void PushFrameAndDetections(const cv::Mat& frame, DetectionResult&& detections);
+    void setFrameAndDetections(cv::Mat frame, DetectionResult detections);
 
     /**
      * @brief Retrieves the most recent annotated frame
-     * @return Deep copy of the frame with drawn detections
+     * @return Shallow copy (ref count) of the frame with drawn detections
      */
     cv::Mat getDrawnFrame() const;
 
@@ -66,8 +66,6 @@ private:
     cv::Mat latestFrame_;                               ///< Input frame
     DetectionResult latestDetection_;                   ///< Detection vector
     mutable std::mutex frameMutex_;                     ///< Protects frame and detection access
-
-    std::atomic<bool> isFrameAndDetectionSet_{false};   ///< New data available flag
 
     inline static const cv::Scalar kBoxColor{0, 255, 0};///< Bounding box color (green)
     static constexpr int kBoxThickness = 2;             ///< Bounding box line thickness

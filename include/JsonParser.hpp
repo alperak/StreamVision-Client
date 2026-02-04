@@ -15,7 +15,8 @@
  */
 class JsonParser {
 public:
-    JsonParser() = default;
+    JsonParser() = delete;
+    ~JsonParser() = delete;
     JsonParser(const JsonParser&) = delete;
     JsonParser& operator=(const JsonParser&) = delete;
     JsonParser(JsonParser&&) = delete;

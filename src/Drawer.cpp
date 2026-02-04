@@ -1,5 +1,7 @@
 #include "Drawer.hpp"
 
+#include <spdlog/spdlog.h>
+
 Drawer::~Drawer()
 {
     stop();
@@ -11,6 +13,7 @@ void Drawer::start()
         return;
 
     drawerThread_ = std::thread(&Drawer::drawDetectionsOnFrame, this);
+    spdlog::info("[Drawer] - Started");
 }
 
 void Drawer::stop()
@@ -22,6 +25,8 @@ void Drawer::stop()
 
     if (drawerThread_.joinable())
         drawerThread_.join();
+
+    spdlog::info("[Drawer] - Stopped");
 }
 
 void Drawer::setFrameAndDetections(cv::Mat frame, DetectionResult detections)

@@ -64,18 +64,7 @@ void PipelineController::process() {
             drawer_->setFrameAndDetections(std::move(frame), std::move(parsedJson));
             cv::Mat drawnFrame = drawer_->getDrawnFrame();
             // Stream annotated frame to web
-            webStream_->setFrame(drawnFrame);
-
-            /* std::cout << "Detections (" << parsedJson.detections.size() << "):\n";
-            for (const auto& d : parsedJson.detections) {
-                std::cout << "classId: " << d.classId
-                            << " , ClassName: " << d.className
-                            << " , Confidence: " << d.confidence
-                            << " , BBox: (" << d.boundingBox.x << ", "
-                                            << d.boundingBox.y << ", "
-                                            << d.boundingBox.width << ", "
-                                            << d.boundingBox.height << ")\n";
-            }*/
+            webStream_->setFrame(std::move(drawnFrame));
         }
     }
 }

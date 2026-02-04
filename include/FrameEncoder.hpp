@@ -15,6 +15,7 @@
 class FrameEncoder {
 public:
     FrameEncoder() = delete;
+    ~FrameEncoder() = delete;
     FrameEncoder(const FrameEncoder&) = delete;
     FrameEncoder& operator=(const FrameEncoder&) = delete;
     FrameEncoder(FrameEncoder&&) = delete;

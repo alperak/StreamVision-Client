@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     libavformat-dev \
     libswscale-dev \
     doxygen \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------

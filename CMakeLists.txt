@@ -23,13 +23,12 @@ else()
 endif()
 find_package(httplib REQUIRED)
 find_package(tinyxml2 REQUIRED)
+find_package(spdlog REQUIRED)
 
 set(SOURCES
     src/main.cpp
     src/CameraCapture.cpp
-    src/FrameEncoder.cpp
     src/FrameHandler.cpp
-	src/JsonParser.cpp
 	src/PipelineController.cpp
     src/Drawer.cpp
 	src/WebStream.cpp
@@ -53,6 +52,7 @@ target_link_libraries(streamvision-client
         ${ZeroMQ_LIBRARIES}
         nlohmann_json::nlohmann_json
         tinyxml2::tinyxml2
+        spdlog::spdlog
 )
 
 target_compile_options(streamvision-client PRIVATE

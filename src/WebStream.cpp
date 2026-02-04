@@ -1,5 +1,7 @@
 #include "WebStream.hpp"
 
+#include <spdlog/spdlog.h>
+
 WebStream::~WebStream()
 {
     stop();
@@ -11,6 +13,7 @@ void WebStream::start()
         return;
 
     webServerThread_ = std::thread(&WebStream::runMjpegStream, this);
+    spdlog::info("[WebStream] - Started");
 }
 
 void WebStream::stop()
@@ -22,6 +25,8 @@ void WebStream::stop()
 
     if (webServerThread_.joinable())
         webServerThread_.join();
+
+    spdlog::info("[WebStream] - Stopped");
 }
 
 void WebStream::setFrame(cv::Mat frame)
@@ -72,5 +77,6 @@ void WebStream::runMjpegStream()
             nullptr // resource release
         );
     });
+    spdlog::info("[WebStream] - MJPEG stream available at http://localhost:{}/stream", port_);
     server_.listen("localhost", port_);
 }

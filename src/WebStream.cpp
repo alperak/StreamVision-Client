@@ -1,5 +1,7 @@
 #include "WebStream.hpp"
 
+#include <spdlog/spdlog.h>
+
 WebStream::~WebStream()
 {
     stop();
@@ -7,33 +9,36 @@ WebStream::~WebStream()
 
 void WebStream::start()
 {
-    if (isRunning_) {
+    if (isRunning_.exchange(true))
         return;
-    }
-    isRunning_ = true;
+
     webServerThread_ = std::thread(&WebStream::runMjpegStream, this);
+    spdlog::info("[WebStream] - Started");
 }
 
 void WebStream::stop()
 {
-    isRunning_ = false;
-    if (webServerThread_.joinable()) {
-        webServerThread_.join();
-    }
+    if (!isRunning_.exchange(false))
+        return;
+
     server_.stop();
+
+    if (webServerThread_.joinable())
+        webServerThread_.join();
+
+    spdlog::info("[WebStream] - Stopped");
 }
 
-void WebStream::pushFrame(const cv::Mat& frame)
+void WebStream::setFrame(cv::Mat frame)
 {
     if (!frame.empty()) {
         std::lock_guard<std::mutex> lock(frameMutex_);
-        latestFrame_ = frame.clone();
+        latestFrame_ = std::move(frame);
     }
 }
 
 void WebStream::runMjpegStream()
 {
-    cv::Mat displayedFrame;
     // Register MJPEG endpoint
     server_.Get("/stream", [&](const httplib::Request&, httplib::Response &res) {
         // Set multipart MJPEG content type
@@ -41,18 +46,24 @@ void WebStream::runMjpegStream()
             "multipart/x-mixed-replace; boundary=frame",
             [&](size_t, httplib::DataSink &sink) {
                 while (isRunning_) {
+                    cv::Mat displayedFrame;
                     {
                         std::lock_guard<std::mutex> lock(frameMutex_);
-                        displayedFrame = latestFrame_.clone();
+                        if (latestFrame_.empty())
+                            continue;
+                        displayedFrame = latestFrame_;
                     }
+
                     auto encodedDisplayedFrame = FrameEncoder::encodeJPEG(displayedFrame);
+                    if (!encodedDisplayedFrame)
+                        continue;
 
                     std::string header = "--frame\r\n"
-                                            "Content-Type: image/jpeg\r\n"
-                                            "Content-Length: " + std::to_string(encodedDisplayedFrame.size()) + "\r\n\r\n";
+                                         "Content-Type: image/jpeg\r\n"
+                                         "Content-Length: " + std::to_string(encodedDisplayedFrame->size()) + "\r\n\r\n";
 
                     sink.write(header.data(), header.size());
-                    sink.write(reinterpret_cast<const char*>(encodedDisplayedFrame.data()), encodedDisplayedFrame.size());
+                    sink.write(reinterpret_cast<const char*>(encodedDisplayedFrame->data()), encodedDisplayedFrame->size());
                     sink.write("\r\n", 2);
 
                     // Limit the frame sending rate to ~30 FPS.
@@ -66,5 +77,6 @@ void WebStream::runMjpegStream()
             nullptr // resource release
         );
     });
+    spdlog::info("[WebStream] - MJPEG stream available at http://localhost:{}/stream", port_);
     server_.listen("localhost", port_);
 }

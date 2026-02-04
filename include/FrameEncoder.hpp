@@ -1,6 +1,8 @@
 #ifndef FRAMEENCODER_HPP_
 #define FRAMEENCODER_HPP_
 
+#include <vector>
+#include <optional>
 #include <opencv2/imgcodecs.hpp>
 
 /**
@@ -13,6 +15,7 @@
 class FrameEncoder {
 public:
     FrameEncoder() = delete;
+    ~FrameEncoder() = delete;
     FrameEncoder(const FrameEncoder&) = delete;
     FrameEncoder& operator=(const FrameEncoder&) = delete;
     FrameEncoder(FrameEncoder&&) = delete;
@@ -24,7 +27,16 @@ public:
      * @param quality JPEG quality [1-100], higher is better quality
      * @return Encoded JPEG data as byte vector
      */
-    static std::vector<uchar> encodeJPEG(const cv::Mat& frame, int quality = defaultJPEGQuality_);
+    inline static std::optional<std::vector<uchar>> encodeJPEG(const cv::Mat& frame, int quality = defaultJPEGQuality_) {
+        if (frame.empty())
+            return std::nullopt;
+
+        std::vector<uchar> encodedFrameBuffer;
+        if (!cv::imencode(".jpg", frame, encodedFrameBuffer, {cv::IMWRITE_JPEG_QUALITY, quality}))
+            return std::nullopt;
+
+        return encodedFrameBuffer;
+    }
 
 private:
     static constexpr int defaultJPEGQuality_{90};   ///< Default JPEG quality setting

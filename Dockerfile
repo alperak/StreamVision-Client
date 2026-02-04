@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     libavformat-dev \
     libswscale-dev \
     doxygen \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------
@@ -98,6 +99,18 @@ RUN git clone https://github.com/yhirose/cpp-httplib.git . && \
 WORKDIR /opt/tinyxml2
 RUN git clone https://github.com/leethomason/tinyxml2.git . && \
     git checkout 11.0.0 && \
+    mkdir -p build && cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig
+
+# -----------------------------
+# spdlog v1.17.0
+# -----------------------------
+WORKDIR /opt/spdlog
+RUN git clone https://github.com/gabime/spdlog.git . && \
+    git checkout v1.17.0 && \
     mkdir -p build && cd build && \
     cmake .. && \
     make -j$(nproc) && \

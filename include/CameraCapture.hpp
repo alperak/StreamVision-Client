@@ -2,11 +2,10 @@
 #define CAMERACAPTURE_HPP_
 
 #include "ConfigXML.hpp"
+
 #include <opencv2/videoio.hpp>
 #include <opencv2/core/mat.hpp>
 #include <atomic>
-#include <exception>
-#include <iostream>
 #include <thread>
 #include <mutex>
 
@@ -49,7 +48,7 @@ public:
 
     /**
      * @brief Retrieves the most recent captured frame
-     * @return Deep copy of the latest frame
+     * @return Shallow copy (ref counted) of the latest frame
      */
     cv::Mat getLatestFrame() const;
 

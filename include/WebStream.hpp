@@ -45,7 +45,7 @@ public:
      * @brief Submits a frame for streaming
      * @param frame Input frame to stream
      */
-    void pushFrame(const cv::Mat& frame);
+    void setFrame(cv::Mat frame);
 
 private:
     /**

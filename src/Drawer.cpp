@@ -18,6 +18,8 @@ void Drawer::stop()
     if (!isRunning_.exchange(false))
         return;
 
+    frameReady_.notify_all();
+
     if (drawerThread_.joinable())
         drawerThread_.join();
 }
@@ -28,7 +30,9 @@ void Drawer::setFrameAndDetections(cv::Mat frame, DetectionResult detections)
         std::lock_guard<std::mutex> lock(frameMutex_);
         latestFrame_ = std::move(frame);
         latestDetection_ = std::move(detections);
+        hasNewFrame_ = true;
     }
+    frameReady_.notify_one();
 }
 
 cv::Mat Drawer::getDrawnFrame() const {
@@ -42,11 +46,17 @@ void Drawer::drawDetectionsOnFrame()
         cv::Mat frameToDraw;
         DetectionResult detections;
         {
-            std::lock_guard<std::mutex> lock(frameMutex_);
-            if (latestFrame_.empty())
-                continue;
+            std::unique_lock<std::mutex> lock(frameMutex_);
+            // Wait until new frame arrived
+            frameReady_.wait(lock, [this] {
+                return hasNewFrame_ || !isRunning_;
+            });
+
+            if (!isRunning_) break;
+
             frameToDraw = latestFrame_.clone();
             detections = std::move(latestDetection_);
+             hasNewFrame_ = false;
         }
 
         // Each incoming frame may or may not contain detections, which is normal.

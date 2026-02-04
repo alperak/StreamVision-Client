@@ -2,9 +2,11 @@
 #define DRAWER_HPP_
 
 #include "DetectionData.hpp"
+
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <condition_variable>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -66,6 +68,9 @@ private:
     cv::Mat latestFrame_;                               ///< Input frame
     DetectionResult latestDetection_;                   ///< Detection vector
     mutable std::mutex frameMutex_;                     ///< Protects frame and detection access
+
+    std::condition_variable frameReady_;
+    bool hasNewFrame_{false};
 
     inline static const cv::Scalar kBoxColor{0, 255, 0};///< Bounding box color (green)
     static constexpr int kBoxThickness = 2;             ///< Bounding box line thickness
